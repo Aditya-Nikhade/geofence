@@ -12,7 +12,5 @@ services:
     container_name: geofence_frontend
     ports:
       - "8081:80"
-    environment:
-      - VITE_API_BASE_URL=${VITE_API_BASE_URL}
     depends_on:
       - backend

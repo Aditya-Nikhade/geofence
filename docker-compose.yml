@@ -1,0 +1,18 @@
+services:
+
+  backend:
+    build: ./backend
+    container_name: geofence_backend
+    ports:
+      - "5001:5000"
+    environment:
+      - REDIS_URL=${REDIS_URL}
+  frontend:
+    build: ./frontend
+    container_name: geofence_frontend
+    ports:
+      - "8081:80"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:5001/api
+    depends_on:
+      - backend

@@ -16,9 +16,9 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Build Docker Images for Validation
-        # The 'docker-compose build' command is a great way to test if all
+        # The 'docker compose build' command is a great way to test if all
         # services defined in the file can be built without errors.
-        run: docker-compose build
+        run: docker compose build
 
   # --- CD Job ---
   # This job deploys the new versions of the frontend and backend to your server.
@@ -51,7 +51,7 @@ jobs:
             echo ">>> Rebuilding and restarting Geofence services..."
             # This single command intelligently stops the old frontend and backend,
             # builds the new images, and starts the new containers.
-            docker-compose up --build -d
+            docker compose up --build -d
 
             echo ">>> Pruning old Docker images..."
             docker image prune -af

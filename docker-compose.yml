@@ -1,16 +1,28 @@
 services:
-
   backend:
     build: ./backend
     container_name: geofence_backend
-    ports:
-      - "5001:5000"
+    restart: always # ADDED for robustness
     environment:
       - REDIS_URL=${REDIS_URL}
+    # This connects the container to our shared network.
+    networks: # ADDED
+      - master_network
+    # PORTS SECTION REMOVED. The master proxy will handle traffic.
+
   frontend:
     build: ./frontend
     container_name: geofence_frontend
-    ports:
-      - "8081:80"
+    restart: always # ADDED for robustness
     depends_on:
       - backend
+    # This connects the container to our shared network.
+    networks: # ADDED
+      - master_network
+    # PORTS SECTION REMOVED. The master proxy will handle traffic.
+
+# This section tells Docker Compose to use the 'master_network'
+# that we already created manually.
+networks:
+  master_network:
+    external: true

@@ -26,6 +26,15 @@ const highlightIcon = L.icon({
     shadowSize: [41, 41]
 });
 
+const redIcon = L.icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
 function App() {
   const mapRef = useRef(null);
   const [map, setMap] = useState(null);
@@ -36,6 +45,7 @@ function App() {
   const DEFAULT_RADIUS = 1000; // 1 km
   const [radius, setRadius] = useState(DEFAULT_RADIUS);
   const [nearbyCount, setNearbyCount] = useState(0);
+  const [redMarker, setRedMarker] = useState(null);
 
   // Initialize map
   useEffect(() => {
@@ -75,10 +85,15 @@ function App() {
         const newMarkers = { ...prev };
         if (newMarkers[id]) {
           newMarkers[id].setLatLng([lat, lng]);
+          newMarkers[id].setPopupContent(`Driver: ${id}<br/>Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`);
         } else {
-          const m = L.marker([lat, lng], { icon: defaultIcon }).bindPopup(id);
-            m.addTo(driversLayerRef.current);
-            newMarkers[id] = m;
+          const m = L.marker([lat, lng], { icon: defaultIcon })
+            .bindPopup(`Driver: ${id}<br/>Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`);
+          m.addTo(driversLayerRef.current);
+          // Show popup on hover
+          m.on('mouseover', () => m.openPopup());
+          m.on('mouseout', () => m.closePopup());
+          newMarkers[id] = m;
         }
         return newMarkers;
       });
@@ -116,6 +131,21 @@ function App() {
     if (!map) return;
     const { lat, lng } = e.latlng;
 
+    // Add or move the red marker at the clicked location
+    if (redMarker) {
+      redMarker.setLatLng([lat, lng]);
+      redMarker.setPopupContent(`Clicked Location:<br/>Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`);
+    } else {
+      const marker = L.marker([lat, lng], { icon: redIcon })
+        .addTo(map)
+        .bindPopup(`Your Location:<br/>Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`);
+      setRedMarker(marker);
+      // Show popup on hover
+      marker.on('mouseover', () => marker.openPopup());
+      marker.on('mouseout', () => marker.closePopup());
+    }
+    if (redMarker) redMarker.openPopup();
+
     if (queryCircle) {
       queryCircle.setLatLng(e.latlng);
       queryCircle.setRadius(radius);
@@ -126,26 +156,36 @@ function App() {
 
     try {
       // Clear existing driver markers
-    if (driversLayerRef.current) driversLayerRef.current.clearLayers();
-    setDriverMarkers({});
-    setNearbyCount(0);
+      if (driversLayerRef.current) driversLayerRef.current.clearLayers();
+      setDriverMarkers({});
+      setNearbyCount(0);
 
-    setLoading(true);
-    // Wait 2 seconds before adding new drivers
-    await sleep(2000);
+      setLoading(true);
+      // Wait 2 seconds before adding new drivers
+      await sleep(2000);
 
-    // Simulate a random number (5-15) of drivers around the clicked point and send to backend
-    const driverCount = Math.floor(Math.random() * 11) + 5; // 5-15
-    const simulatedDrivers = Array.from({ length: driverCount }, (_, i) => {
-      const point = randomPointInRadius(lat, lng, radius * 0.8);
-      return { id: `driver${i + 1}`, lat: point.lat, lng: point.lng };
-    });
+      // Simulate a random number (5-15) of drivers, some inside and some outside the circle
+      const driverCount = Math.floor(Math.random() * 11) + 5; // 5-15
+      const insideCount = Math.floor(driverCount * 0.7); // 70% inside
+      const outsideCount = driverCount - insideCount;
+      const simulatedDrivers = [];
+      // Inside drivers
+      for (let i = 0; i < insideCount; i++) {
+        const point = randomPointInRadius(lat, lng, radius * 0.8);
+        simulatedDrivers.push({ id: `driver${i + 1}`, lat: point.lat, lng: point.lng });
+      }
+      // Outside drivers (between 1.2x and 2x radius)
+      for (let i = 0; i < outsideCount; i++) {
+        const r = radius * (1.2 + Math.random() * 0.8); // 1.2x to 2x radius
+        const point = randomPointInRadius(lat, lng, r);
+        simulatedDrivers.push({ id: `driver${insideCount + i + 1}`, lat: point.lat, lng: point.lng });
+      }
 
-    for (const d of simulatedDrivers) {
-      await upsertDriver(d.id, d.lat, d.lng);
-    }
+      for (const d of simulatedDrivers) {
+        await upsertDriver(d.id, d.lat, d.lng);
+      }
 
-    await updateNearbyDrivers(lat, lng);
+      await updateNearbyDrivers(lat, lng);
 
     } catch (error) {
       console.error('Failed to fetch nearby drivers:', error);

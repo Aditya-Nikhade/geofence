@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@turf/boolean-point-in-polygon": "^7.2.0",
+    "leaflet-draw": "^1.0.4",
+    "mongoose": "^8.16.2",
+    "openrouteservice-js": "^0.4.1",
+    "socket.io-client": "^4.8.1"
+  }
+}

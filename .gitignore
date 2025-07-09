@@ -47,3 +47,6 @@ Thumbs.db
 # Local environment
 backend/.env
 frontend/.env
+
+fix.txt
+explanation.txt

@@ -13,8 +13,9 @@
 .sidebar {
   width: 350px;
   min-width: 350px;
-  background: #ffffff;
-  border-right: 1px solid #dee2e6;
+  /* Add a subtle blue-violet gradient */
+  background: linear-gradient(135deg, #e3f0ff 0%, #f3e8ff 100%);
+  border-right: 2.5px solid #a5b4fc;
   display: flex;
   flex-direction: column;
   box-shadow: 2px 0 10px rgba(0,0,0,0.05);
@@ -34,7 +35,8 @@
 .controls {
   padding: 20px;
   border-bottom: 1px solid #dee2e6;
-  background: #f8f9fa;
+  /* Add a soft blue background for the controls panel */
+  background: linear-gradient(90deg, #e0e7ff 0%, #f3e8ff 100%);
   flex-shrink: 0; /* Prevent this panel from shrinking */
 }
 
@@ -42,7 +44,8 @@
 .sidebar-panel {
   padding: 20px;
   border-bottom: 1px solid #dee2e6;
-  background: #ffffff;
+  /* Add a very light violet background for panels */
+  background: linear-gradient(90deg, #f3e8ff 0%, #e0e7ff 100%);
   flex-shrink: 0; /* Prevent panels from shrinking */
 }
 .sidebar-panel h3 {
@@ -140,3 +143,65 @@
 .delete-btn:hover { background-color: #c82333; }
 .delete-btn:disabled { background-color: #6c757d; cursor: not-allowed; }
 .driver-filters input:disabled, .driver-filters select:disabled { background-color: #e9ecef; cursor: not-allowed; }
+
+.benchmark-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e9ecef 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  font-family: 'Poppins', 'Inter', sans-serif;
+}
+
+.benchmark-page h2 {
+  font-size: 2.2em;
+  font-weight: 600;
+  margin-top: 48px;
+  margin-bottom: 16px;
+  color: #1c7ed6;
+  letter-spacing: -1px;
+}
+
+.benchmark-page button {
+  background: #1c7ed6;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 28px;
+  font-size: 1.1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(28,126,214,0.08);
+}
+.benchmark-page button:hover {
+  background: #1971c2;
+}
+
+.benchmark-result {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(44,62,80,0.08);
+  padding: 32px 40px;
+  margin: 32px auto 0 auto;
+  max-width: 420px;
+  text-align: left;
+  font-size: 1.1em;
+  color: #222;
+}
+.benchmark-result h3 {
+  margin-top: 0;
+  color: #1971c2;
+  font-size: 1.3em;
+  font-weight: 600;
+}
+.benchmark-result p {
+  margin: 12px 0;
+  font-family: 'Inter', 'Poppins', sans-serif;
+  font-size: 1.05em;
+}
+.benchmark-result b {
+  color: #1c7ed6;
+  font-weight: 600;
+}

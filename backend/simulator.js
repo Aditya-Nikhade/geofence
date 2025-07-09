@@ -31,10 +31,10 @@ async function getRoute(start, end) {
 }
 
 // --- Simulation Config ---
-const NUM_DRIVERS = 10;
-const UPDATE_INTERVAL_MS = 1500; // 1.5 seconds between location updates
-const ROUTE_REFRESH_INTERVAL = 10 * 60 * 1000; // 10 minutes per new route per driver
-const BOUNDING_BOX = {
+let NUM_DRIVERS = 7;
+let UPDATE_INTERVAL_MS = 3000; // 3 seconds between location updates
+let ROUTE_REFRESH_INTERVAL = 20 * 60 * 1000; // 20 minutes per new route per driver
+let BOUNDING_BOX = {
   minLon: 77.55, maxLon: 77.65, // Example: Bangalore area
   minLat: 12.90, maxLat: 13.05
 };
@@ -151,4 +151,36 @@ async function main() {
 
 if (require.main === module) {
   main();
-} 
+}
+
+// --- City Simulation API ---
+let drivers = [];
+function setBoundingBoxForCity(coords) {
+  // 0.1 deg box around city center
+  const delta = 0.05;
+  BOUNDING_BOX = {
+    minLon: coords.lng - delta,
+    maxLon: coords.lng + delta,
+    minLat: coords.lat - delta,
+    maxLat: coords.lat + delta,
+  };
+}
+
+async function simulateCity(city, coords) {
+  setBoundingBoxForCity(coords);
+  // Stop previous drivers
+  if (drivers.length > 0) {
+    drivers.forEach(d => d.stop());
+    drivers = [];
+  }
+  // Start new drivers
+  for (let i = 1; i <= NUM_DRIVERS; i++) {
+    const driver = new SimDriver(`D-${city}-${i}`);
+    drivers.push(driver);
+    setTimeout(() => driver.start(), i * 2000);
+  }
+}
+
+module.exports = {
+  simulateCity,
+}; 

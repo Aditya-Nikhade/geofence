@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import Benchmark from './Benchmark';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import axios from 'axios';
@@ -11,6 +13,8 @@ import 'leaflet-draw';
 import 'leaflet.markercluster';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+import LandingPage from './LandingPage';
+import { CityContext } from './CityContext';
 
 // Using a robust library or a well-tested function is better.
 function pointInPolygon(point, polygon) {
@@ -36,7 +40,7 @@ L.Icon.Default.mergeOptions({
 });
 const defaultIcon = new L.Icon.Default();
 
-function App() {
+function Dashboard() {
     const mapRef = useRef(null);
     const [map, setMap] = useState(null);
     const driversLayerRef = useRef(null);
@@ -45,7 +49,6 @@ function App() {
 
     const [zones, setZones] = useState([]);
     const [selectedZoneIndex, setSelectedZoneIndex] = useState(-1);
-    const [eventLog, setEventLog] = useState([]);
     const [driversInZone, setDriversInZone] = useState(0);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
@@ -55,6 +58,8 @@ function App() {
     const [zoneDriverCounts, setZoneDriverCounts] = useState([]);
 
     const driversRef = useRef({});
+    const zonesRef = useRef(zones);
+    useEffect(() => { zonesRef.current = zones; }, [zones]);
 
     const zoneTypeColors = {
         'No Entry': '#e74c3c', 'Pickup': '#27ae60', 'Dropoff': '#2980b9',
@@ -133,12 +138,37 @@ function App() {
             }
         };
 
+        // --- ADDED: Handler for editing zones ---
+        const handleZoneEdit = (e) => {
+            const layers = e.layers;
+            const updatedZones = [...zonesRef.current];
+            layers.eachLayer(layer => {
+                // Try to match by name from popup, fallback to geometry match if needed
+                const popupContent = layer.getPopup()?.getContent();
+                let zoneName = null;
+                if (popupContent) {
+                    const nameMatch = popupContent.match(/<b>Zone:<\/b> (.*?)<br/);
+                    zoneName = nameMatch ? nameMatch[1] : null;
+                }
+                const idx = zoneName ? updatedZones.findIndex(z => z.name === zoneName) : -1;
+                if (idx !== -1) {
+                    updatedZones[idx] = {
+                        ...updatedZones[idx],
+                        geojson: layer.toGeoJSON().geometry
+                    };
+                }
+            });
+            setZones(updatedZones);
+        };
+
         map.on(L.Draw.Event.CREATED, handleZoneCreate);
+        map.on(L.Draw.Event.EDITED, handleZoneEdit);
 
         return () => {
             map.off(L.Draw.Event.CREATED, handleZoneCreate);
+            map.off(L.Draw.Event.EDITED, handleZoneEdit);
         };
-    }, [map, zoneType]); // Keeping zoneType is necessary for the handler to have the latest value.
+    }, [map, zoneType]); // Removed zones as dependency
 
     // --- 3. Render/Update Zone Polygons on Map ---
     useEffect(() => {
@@ -195,9 +225,6 @@ function App() {
                 setSelectedDriver(prev => ({ ...prev, location, lastUpdated: Date.now() }));
             }
             setDriversVersion(v => v + 1);
-        });
-        socket.on('geofenceAlert', (alert) => {
-            setEventLog((prev) => [{ ...alert, id: Date.now() + Math.random() }, ...prev.slice(0, 49)]);
         });
         return () => socket.disconnect();
     }, [selectedDriver]); // Dependency added to ensure the click handler has access to the latest state.
@@ -260,13 +287,16 @@ function App() {
         setZoneDriverCounts(counts);
     }, [driversVersion, zones]);
 
+    const navigate = useNavigate();
     return (
         <div className="app-container">
             <div className="sidebar">
                 <div className="controls">
-                    <h2>Fleet-Track</h2>
-                    <p>Real-time driver tracking and zone alerts.</p>
-                    
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <h2>Fleet-Track</h2>
+                        <button onClick={() => navigate('/benchmark')} style={{ marginLeft: 12, fontSize: 14, padding: '4px 10px' }}>Test Benchmark</button>
+                    </div>
+                        
                     <div className="control-group">
                         <label><b>Manage Zones</b></label>
                         <div className="zone-management">
@@ -343,21 +373,54 @@ function App() {
                   </ul>
                 </div>
 
-                <div className="event-log-container">
-                    <h3>Live Event Log</h3>
-                    <ul className="event-log">
-                        {eventLog.map((event) => (
-                            <li key={event.id} className={event.status}>
-                                <span>{new Date(event.timestamp).toLocaleTimeString()} - </span>
-                                <b>{event.driverId}</b> {event.status} <b>{event.zoneName}</b>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
             </div>
             <div ref={mapRef} className="map-container"></div>
         </div>
     );
 }
 
-export default App;
+function AppWithCity() {
+    const [selectedCity, setSelectedCity] = useState(() => {
+        const saved = sessionStorage.getItem('selectedCity');
+        return saved ? JSON.parse(saved) : null;
+    });
+
+    useEffect(() => {
+        const handlePopState = () => {
+            setSelectedCity(null);
+            sessionStorage.removeItem('selectedCity');
+        };
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
+
+    useEffect(() => {
+        if (selectedCity) sessionStorage.setItem('selectedCity', JSON.stringify(selectedCity));
+    }, [selectedCity]);
+
+    const handleSelectCity = async (city) => {
+        setSelectedCity(city);
+        try {
+            await axios.post(`${API_BASE}/api/simulate`, { city: city.name, coords: city.coords });
+        } catch {
+            alert('Failed to start simulation for this city.');
+        }
+    };
+
+    if (!selectedCity) {
+        return <LandingPage onSelectCity={handleSelectCity} />;
+    }
+
+    return (
+        <CityContext.Provider value={selectedCity}>
+            <Router>
+                <Routes>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/benchmark" element={<Benchmark />} />
+                </Routes>
+            </Router>
+        </CityContext.Provider>
+    );
+}
+
+export default AppWithCity;

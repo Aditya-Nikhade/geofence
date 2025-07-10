@@ -19,6 +19,7 @@
     "mongoose": "^8.16.2",
     "openrouteservice-js": "^0.4.1",
     "redis": "^5.5.6",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1"
   }
 }

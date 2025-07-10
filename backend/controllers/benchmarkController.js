@@ -12,7 +12,12 @@ exports.runBenchmark = async (req, res) => {
 
     // --- Redis Benchmark ---
     const redisStartTime = performance.now();
-    await redisClient.geoRadius('driver_locations', { latitude: lat, longitude: lon }, radius, 'm', { COUNT: count });
+    const redisClientInstance = await redisClient.getRedisClient();
+    await redisClientInstance.geoSearch(
+        'driver_locations',
+        { longitude: lon, latitude: lat },
+        { radius: radius, unit: 'm', COUNT: count, WITHCOORD: true }
+    );
     const redisEndTime = performance.now();
     const redisDuration = (redisEndTime - redisStartTime).toFixed(2);
 

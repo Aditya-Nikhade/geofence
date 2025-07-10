@@ -35,7 +35,7 @@ let NUM_DRIVERS = 7;
 let UPDATE_INTERVAL_MS = 3000; // 3 seconds between location updates
 let ROUTE_REFRESH_INTERVAL = 20 * 60 * 1000; // 20 minutes per new route per driver
 let BOUNDING_BOX = null; // No default; set when city is selected
-const BACKEND_URL = 'http://localhost:5000/api/drivers'; // Adjust if needed
+const BACKEND_URL = process.env.BACKEND_URL || 'http://geofence_backend:5000/api/drivers'; // Use env or default to service name
 
 // --- Utility Functions ---
 function randomCoord() {

@@ -43,6 +43,7 @@ app.use('/api', geofenceRoutes);
 app.use('/api', benchmarkRoutes);
 app.post('/api/simulate', async (req, res) => {
     const { city, coords } = req.body;
+    console.log('Received /api/simulate request:', { city, coords });
     try {
         // Remove all drivers from DB before simulating new city
         await Driver.deleteMany({});
@@ -51,6 +52,9 @@ app.post('/api/simulate', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Simulation error:', err);
+        if (err && err.stack) {
+            console.error('Stack trace:', err.stack);
+        }
         res.status(500).json({ error: 'Simulation failed' });
     }
 });

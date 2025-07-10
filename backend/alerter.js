@@ -59,6 +59,10 @@ async function getAllDriverLocations(redisClient) {
       { longitude: 78.48, latitude: 17.38 },
       { radius: 500, unit: 'km', RETURN: ['WITHCOORD'] }
     );
+    if (!Array.isArray(results)) {
+      console.error("geoSearch did not return an array:", results);
+      return [];
+    }
     return results.map(item => ({
       driverId: item.member,
       longitude: item.coordinates[0],

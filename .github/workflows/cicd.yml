@@ -46,6 +46,7 @@ jobs:
             # This securely writes the secret to the .env file on the server.
             cat <<EOF > .env
             REDIS_URL=${{ secrets.REDIS_URL }}
+            ORS_API_KEY=${{ secrets.ORS_API_KEY }}
             EOF
 
             echo ">>> Rebuilding and restarting Geofence services..."

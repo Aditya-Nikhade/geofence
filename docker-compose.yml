@@ -5,6 +5,7 @@ services:
     restart: always # ADDED for robustness
     environment:
       - REDIS_URL=${REDIS_URL}
+      - ORS_API_KEY=${ORS_API_KEY}
     # This connects the container to our shared network.
     networks: # ADDED
       - master_network

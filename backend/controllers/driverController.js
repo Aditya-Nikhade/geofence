@@ -1,4 +1,4 @@
-const redisClient = require('../redisClient');
+const { getRedisClient } = require('../redisClient');
 const Driver = require('../models/driverModel');
 const DriverBenchmark = require('../models/driverBenchmarkModel');
 
@@ -13,11 +13,15 @@ exports.updateLocation = async (req, res) => {
   }
 
   try {
-    await redisClient.geoAdd(redisKey, {
-      longitude: parseFloat(longitude),
-      latitude: parseFloat(latitude),
-      member: driverId,
-    });
+    const client = await getRedisClient();
+    await client.geoAdd(
+      'driver_locations',
+      [{
+        longitude: parseFloat(longitude),
+        latitude: parseFloat(latitude),
+        member: driverId,
+      }]
+    );
     // Also update MongoDB benchmark collection
     await DriverBenchmark.findOneAndUpdate(
       { driverId },

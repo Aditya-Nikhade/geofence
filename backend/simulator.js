@@ -34,14 +34,12 @@ async function getRoute(start, end) {
 let NUM_DRIVERS = 7;
 let UPDATE_INTERVAL_MS = 3000; // 3 seconds between location updates
 let ROUTE_REFRESH_INTERVAL = 20 * 60 * 1000; // 20 minutes per new route per driver
-let BOUNDING_BOX = {
-  minLon: 77.55, maxLon: 77.65, // Example: Bangalore area
-  minLat: 12.90, maxLat: 13.05
-};
+let BOUNDING_BOX = null; // No default; set when city is selected
 const BACKEND_URL = 'http://localhost:5000/api/drivers'; // Adjust if needed
 
 // --- Utility Functions ---
 function randomCoord() {
+  if (!BOUNDING_BOX) throw new Error('Bounding box not set. Please select a city.');
   const lon = Math.random() * (BOUNDING_BOX.maxLon - BOUNDING_BOX.minLon) + BOUNDING_BOX.minLon;
   const lat = Math.random() * (BOUNDING_BOX.maxLat - BOUNDING_BOX.minLat) + BOUNDING_BOX.minLat;
   return [lon, lat];

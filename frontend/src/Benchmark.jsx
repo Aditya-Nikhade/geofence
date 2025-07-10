@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useCity } from './CityContext';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -9,6 +10,22 @@ export default function Benchmark() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const selectedCity = useCity();
+
+  useEffect(() => {
+    if (!selectedCity) {
+      navigate('/', { replace: true });
+      return;
+    }
+    const handlePopState = () => {
+      // Always go to dashboard if city is selected
+      if (selectedCity) {
+        navigate('/dashboard', { replace: true });
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [navigate, selectedCity]);
 
   const runBenchmark = async () => {
     setLoading(true);

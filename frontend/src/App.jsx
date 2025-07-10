@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import Benchmark from './Benchmark';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -14,7 +14,7 @@ import 'leaflet.markercluster';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import LandingPage from './LandingPage';
-import { CityContext } from './CityContext';
+import { CityContext, useCity } from './CityContext';
 
 // Using a robust library or a well-tested function is better.
 function pointInPolygon(point, polygon) {
@@ -60,6 +60,16 @@ function Dashboard() {
     const driversRef = useRef({});
     const zonesRef = useRef(zones);
     useEffect(() => { zonesRef.current = zones; }, [zones]);
+
+    const selectedCity = useCity();
+
+    // Add effect to clear drivers when city is deselected
+    useEffect(() => {
+        if (!selectedCity && driversLayerRef.current) {
+            driversLayerRef.current.clearLayers();
+            driversRef.current = {};
+        }
+    }, [selectedCity]);
 
     const zoneTypeColors = {
         'No Entry': '#e74c3c', 'Pickup': '#27ae60', 'Dropoff': '#2980b9',
@@ -384,6 +394,7 @@ function AppWithCity() {
         const saved = sessionStorage.getItem('selectedCity');
         return saved ? JSON.parse(saved) : null;
     });
+    const navigate = useNavigate();
 
     useEffect(() => {
         const handlePopState = () => {
@@ -402,25 +413,28 @@ function AppWithCity() {
         setSelectedCity(city);
         try {
             await axios.post(`${API_BASE}/api/simulate`, { city: city.name, coords: city.coords });
+            navigate('/dashboard');
         } catch {
             alert('Failed to start simulation for this city.');
         }
     };
 
-    if (!selectedCity) {
-        return <LandingPage onSelectCity={handleSelectCity} />;
-    }
-
     return (
         <CityContext.Provider value={selectedCity}>
-            <Router>
-                <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/benchmark" element={<Benchmark />} />
-                </Routes>
-            </Router>
+            <Routes>
+                <Route path="/" element={<LandingPage onSelectCity={handleSelectCity} />} />
+                <Route path="/dashboard" element={selectedCity ? <Dashboard /> : <Navigate to="/" replace />} />
+                <Route path="/benchmark" element={<Benchmark />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
         </CityContext.Provider>
     );
 }
 
-export default AppWithCity;
+export default function App() {
+    return (
+        <Router>
+            <AppWithCity />
+        </Router>
+    );
+}

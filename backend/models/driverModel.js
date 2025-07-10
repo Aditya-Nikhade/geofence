@@ -1,21 +1,10 @@
-// Simple in-memory driver store
-const drivers = {};
+const mongoose = require('mongoose');
 
-function getDriver(driverId) {
-  return drivers[driverId] || null;
-}
+const driverSchema = new mongoose.Schema({
+  driverId: { type: String, required: true, unique: true },
+  latitude: { type: Number, required: true },
+  longitude: { type: Number, required: true },
+  // Add more fields as needed (e.g., status, lastUpdated, etc.)
+}, { timestamps: true });
 
-function setDriver(driverId, data) {
-  drivers[driverId] = { driverId, ...data };
-  return drivers[driverId];
-}
-
-function listDrivers() {
-  return Object.values(drivers);
-}
-
-module.exports = {
-  getDriver,
-  setDriver,
-  listDrivers,
-}; 
+module.exports = mongoose.model('Driver', driverSchema); 

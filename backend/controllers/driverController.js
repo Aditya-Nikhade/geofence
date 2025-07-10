@@ -1,5 +1,5 @@
 const redisClient = require('../redisClient');
-const driverModel = require('../models/driverModel');
+const Driver = require('../models/driverModel');
 const DriverBenchmark = require('../models/driverBenchmarkModel');
 
 const redisKey = 'driver_locations';
@@ -30,6 +30,16 @@ exports.updateLocation = async (req, res) => {
       },
       { upsert: true, new: true }
     );
+    // Update or create driver in main collection
+    await Driver.findOneAndUpdate(
+      { driverId },
+      {
+        driverId,
+        longitude: parseFloat(longitude),
+        latitude: parseFloat(latitude),
+      },
+      { upsert: true, new: true }
+    );
     // Emit real-time update
     const io = req.app.get('io');
     if (io) {
@@ -48,25 +58,42 @@ exports.updateLocation = async (req, res) => {
   }
 };
 
-exports.getDriver = (req, res) => {
+exports.getDriver = async (req, res) => {
   const { driverId } = req.params;
-  const driver = driverModel.getDriver(driverId);
-  if (!driver) {
-    return res.status(404).json({ error: 'Driver not found' });
+  try {
+    const driver = await Driver.findOne({ driverId });
+    if (!driver) {
+      return res.status(404).json({ error: 'Driver not found' });
+    }
+    res.json(driver);
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
   }
-  res.json(driver);
 };
 
-exports.setDriver = (req, res) => {
+exports.setDriver = async (req, res) => {
   const { driverId } = req.params;
-  const { name, status } = req.body;
-  if (!name || !status) {
-    return res.status(400).json({ error: 'Missing required fields: name, status' });
+  const { name, status, longitude, latitude } = req.body;
+  if (!longitude || !latitude) {
+    return res.status(400).json({ error: 'Missing required fields: longitude, latitude' });
   }
-  const driver = driverModel.setDriver(driverId, { name, status });
-  res.json(driver);
+  try {
+    const driver = await Driver.findOneAndUpdate(
+      { driverId },
+      { driverId, longitude, latitude, name, status },
+      { upsert: true, new: true }
+    );
+    res.json(driver);
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
 };
 
-exports.listDrivers = (req, res) => {
-  res.json(driverModel.listDrivers());
+exports.listDrivers = async (req, res) => {
+  try {
+    const drivers = await Driver.find();
+    res.json(drivers);
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
 };

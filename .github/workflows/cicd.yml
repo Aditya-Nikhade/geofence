@@ -35,26 +35,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            # Navigate to the correct project directory on your server
             cd /home/ubuntu/geofence
-
-            echo ">>> Pulling latest code from main branch..."
             git pull origin main
-
-            echo ">>> Creating .env file from GitHub Secrets..."
-            # The backend service for Geofence requires a REDIS_URL.
-            # This securely writes the secret to the .env file on the server.
-            cat <<EOF > .env
-            REDIS_URL=${{ secrets.REDIS_URL }}
-            ORS_API_KEY=${{ secrets.ORS_API_KEY }}
-            EOF
-
-            echo ">>> Rebuilding and restarting Geofence services..."
-            # This single command intelligently stops the old frontend and backend,
-            # builds the new images, and starts the new containers.
             docker compose up --build -d
-
-            echo ">>> Pruning old Docker images..."
             docker image prune -af
-
-            echo ">>> Geofence deployment successfully completed!"

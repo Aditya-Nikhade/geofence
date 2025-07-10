@@ -3,21 +3,31 @@ services:
     build: ./backend
     container_name: geofence_backend
     restart: always # ADDED for robustness
-    environment:
-      - REDIS_URL=${REDIS_URL}
-      - ORS_API_KEY=${ORS_API_KEY}
-    # This connects the container to our shared network.
+    env_file:
+      - .env
+    command: node index.js
     networks: # ADDED
       - master_network
     # PORTS SECTION REMOVED. The master proxy will handle traffic.
+
+  alerter:
+    build: ./backend
+    container_name: geofence_alerter
+    restart: always
+    env_file:
+      - .env
+    command: node alerter.js
+    networks:
+      - master_network
 
   frontend:
     build: ./frontend
     container_name: geofence_frontend
     restart: always # ADDED for robustness
+    env_file:
+      - .env
     depends_on:
       - backend
-    # This connects the container to our shared network.
     networks: # ADDED
       - master_network
     # PORTS SECTION REMOVED. The master proxy will handle traffic.

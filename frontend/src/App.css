@@ -179,23 +179,37 @@
   background: #1971c2;
 }
 
-.benchmark-result {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 24px rgba(44,62,80,0.08);
-  padding: 32px 40px;
-  margin: 32px auto 0 auto;
-  max-width: 420px;
-  text-align: left;
-  font-size: 1.1em;
-  color: #222;
+.benchmark-result, .benchmark-result.wide {
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+  margin: 32px 0 0 0;
+  max-width: 100%;
+  width: 100%;
+  min-width: 900px;
 }
+
+/* Ensure trade-offs grid is not cut off */
+.benchmark-result .tradeoffs-grid {
+  min-width: 700px;
+}
+
 .benchmark-result h3 {
   margin-top: 0;
   color: #1971c2;
   font-size: 1.3em;
   font-weight: 600;
 }
+
+.benchmark-summary {
+  background: #f8f9fa;
+  padding: 24px 24px 20px 24px;
+  border-radius: 8px 8px 0 0;
+  border-bottom: 1.5px solid #e0e0e0;
+  margin-bottom: 0;
+}
+
 .benchmark-result p {
   margin: 12px 0;
   font-family: 'Inter', 'Poppins', sans-serif;
@@ -204,4 +218,14 @@
 .benchmark-result b {
   color: #1c7ed6;
   font-weight: 600;
+}
+
+@media (max-width: 700px) {
+  .benchmark-result, .benchmark-result.wide {
+    padding: 0;
+    font-size: 1em;
+  }
+  .benchmark-summary {
+    padding: 12px 4px 10px 4px;
+  }
 }

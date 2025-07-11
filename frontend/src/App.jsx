@@ -149,9 +149,10 @@ function Dashboard() {
         };
 
         // --- ADDED: Handler for editing zones ---
-        const handleZoneEdit = (e) => {
+        const handleZoneEdit = async (e) => {
             const layers = e.layers;
             const updatedZones = [...zonesRef.current];
+            const patchRequests = [];
             layers.eachLayer(layer => {
                 // Try to match by name from popup, fallback to geometry match if needed
                 const popupContent = layer.getPopup()?.getContent();
@@ -162,13 +163,26 @@ function Dashboard() {
                 }
                 const idx = zoneName ? updatedZones.findIndex(z => z.name === zoneName) : -1;
                 if (idx !== -1) {
+                    const zone = updatedZones[idx];
+                    const newGeojson = layer.toGeoJSON().geometry;
                     updatedZones[idx] = {
-                        ...updatedZones[idx],
-                        geojson: layer.toGeoJSON().geometry
+                        ...zone,
+                        geojson: newGeojson
                     };
+                    // Send PATCH request to backend
+                    patchRequests.push(
+                        axios.patch(`${API_BASE}/api/zones/${zone._id}`, { geojson: newGeojson })
+                    );
                 }
             });
-            setZones(updatedZones);
+            // Wait for all PATCH requests to finish, then re-fetch zones
+            try {
+                await Promise.all(patchRequests);
+                const res = await axios.get(`${API_BASE}/api/zones`);
+                setZones(res.data);
+            } catch {
+                alert('Failed to update zone(s)');
+            }
         };
 
         map.on(L.Draw.Event.CREATED, handleZoneCreate);
@@ -303,8 +317,8 @@ function Dashboard() {
             <div className="sidebar">
                 <div className="controls">
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <h2>Fleet-Track</h2>
-                        <button onClick={() => navigate('/benchmark')} style={{ marginLeft: 12, fontSize: 14, padding: '4px 10px' }}>Test Benchmark</button>
+                        <h2>Geofence</h2>
+                        <button onClick={() => navigate('/benchmark')} style={{ marginLeft: 12, fontSize: 14, padding: '4px 10px', borderColor: '#0398fc', backgroundColor: '#0398fc', cursor: 'pointer', borderRadius: '4px'}}>Test Benchmark</button>
                     </div>
                         
                     <div className="control-group">

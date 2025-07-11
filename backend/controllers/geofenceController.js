@@ -81,3 +81,22 @@ exports.deleteZone = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+exports.updateZone = async (req, res) => {
+  try {
+    const { zoneId } = req.params;
+    const { name, geojson, type } = req.body;
+    const update = {};
+    if (name !== undefined) update.name = name;
+    if (geojson !== undefined) update.geojson = geojson;
+    if (type !== undefined) update.type = type;
+    const updatedZone = await Zone.findByIdAndUpdate(zoneId, update, { new: true });
+    if (!updatedZone) {
+      return res.status(404).json({ error: 'Zone not found' });
+    }
+    res.status(200).json(updatedZone);
+  } catch (err) {
+    console.error('Error updating zone:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};

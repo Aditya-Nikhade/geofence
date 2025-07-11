@@ -1,27 +1,128 @@
-.landing-container {
+/* LandingPage.css */
+
+/* Split screen container */
+.landing-split-container {
   display: flex;
-  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+}
+
+.landing-split-left {
+  flex: 1;
+  display: flex;
   align-items: center;
   justify-content: center;
-  height: 100vh;
-  background: #f5f6fa;
+  background: linear-gradient(135deg, #e3f0ff 0%, #b3d8fd 100%);
 }
-.city-options {
+
+.landing-split-right {
+  flex: 1;
   display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  margin-top: 30px;
+  align-items: stretch;
+  justify-content: stretch;
+  position: relative;
+  min-width: 0;
 }
+
+.landing-image {
+  width: 100%;
+  height: 100%;
+  background-image: url('/geofence.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Remove old .landing-hero background-image */
+.landing-hero {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  /* background-image removed */
+}
+
+.landing-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1;
+  display: none; /* Hide overlay for split layout */
+}
+
+.landing-content {
+  position: relative;
+  z-index: 2;
+  background: #ffffff;
+  padding: 40px 50px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  max-width: 700px;
+  text-align: center;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+.landing-title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: #212529;
+  margin: 0;
+}
+
+.landing-tagline {
+  font-size: 1.1rem;
+  color: #6c757d;
+  margin-top: 10px;
+  max-width: 550px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+.landing-divider {
+  border: 0;
+  height: 1px;
+  background: #dee2e6;
+  margin: 30px auto;
+}
+
+.landing-cta {
+  font-size: 1.5rem;
+  color: #495057;
+  margin-bottom: 25px;
+}
+
+.city-grid {
+  display: grid;
+  /* Creates a responsive grid that fits as many buttons as possible */
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 15px;
+}
+
 .city-btn {
-  padding: 18px 36px;
-  font-size: 1.2rem;
-  border-radius: 8px;
+  /* Styled to match your primary "Run Analysis" button */
+  background-color: #0d6efd;
+  color: white;
   border: none;
-  background: #2980b9;
-  color: #fff;
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background-color 0.2s ease-in-out, transform 0.1s ease;
 }
+
 .city-btn:hover {
-  background: #27ae60;
-} 
+  background-color: #0b5ed7;
+  transform: translateY(-2px);
+}
+
+.city-btn:active {
+  transform: translateY(0);
+}

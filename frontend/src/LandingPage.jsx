@@ -1,5 +1,5 @@
 import React from 'react';
-import './LandingPage.css';
+import './LandingPage.css'; // We will create this new CSS file
 
 const cities = [
   { name: 'Delhi', coords: { lat: 28.6139, lng: 77.2090 } },
@@ -12,20 +12,31 @@ const cities = [
 
 export default function LandingPage({ onSelectCity }) {
   return (
-    <div className="landing-container">
-      <h1>Welcome to Fleet-Track</h1>
-      <h2>Select a City to Start</h2>
-      <div className="city-options">
-        {cities.map(city => (
-          <button
-            key={city.name}
-            className="city-btn"
-            onClick={() => onSelectCity(city)}
-          >
-            {city.name}
-          </button>
-        ))}
+    <div className="landing-split-container">
+      <div className="landing-split-left">
+        <div className="landing-content">
+          <h1 className="landing-title">Geofence</h1>
+          <p className="landing-tagline">
+            An interactive dashboard showcasing a high-performance, event-driven architecture for real-time geofencing and fleet monitoring.
+          </p>
+          <hr className="landing-divider" />
+          <h2 className="landing-cta">Select a Demo Scenario to Begin</h2>
+          <div className="city-grid">
+            {cities.map(city => (
+              <button
+                key={city.name}
+                className="city-btn"
+                onClick={() => onSelectCity(city)}
+              >
+                {city.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="landing-split-right">
+        <div className="landing-image" />
       </div>
     </div>
   );
-} 
+}

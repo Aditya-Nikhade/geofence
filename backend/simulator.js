@@ -9,6 +9,26 @@ if (!apiKey) {
 
 const Directions = new ORS.Directions({ api_key: apiKey });
 
+// --- Simple Rate Limiter for Directions API ---
+const RATE_LIMIT = 40; // requests per minute
+let requestTimestamps = [];
+
+function canMakeRequest() {
+  const now = Date.now();
+  // Remove timestamps older than 60 seconds
+  requestTimestamps = requestTimestamps.filter(ts => now - ts < 60000);
+  return requestTimestamps.length < RATE_LIMIT;
+}
+
+function recordRequest() {
+  requestTimestamps.push(Date.now());
+}
+
+function straightLineRoute(start, end) {
+  // Simple fallback: just return start and end as the route
+  return [start, end];
+}
+
 /**
  * Get a route between two coordinates using OpenRouteService Directions API
  * @param {[number, number]} start - [lon, lat] of start
@@ -16,17 +36,24 @@ const Directions = new ORS.Directions({ api_key: apiKey });
  * @returns {Promise<Array<[number, number]>>} - Array of [lon, lat] coordinates
  */
 async function getRoute(start, end) {
+  if (!canMakeRequest()) {
+    console.warn('[Directions API] Quota exceeded (40/min). Using fallback route.');
+    return straightLineRoute(start, end);
+  }
   try {
+    recordRequest();
     const result = await Directions.calculate({
       coordinates: [start, end],
       profile: 'driving-car',
       format: 'geojson',
     });
     // GeoJSON LineString coordinates
+    console.log(`[Directions API] Route fetched for [${start}] -> [${end}]`);
     return result.features[0].geometry.coordinates;
   } catch (error) {
-    console.error('Error fetching route from ORS:', error.response?.data || error.message);
-    return null;
+    console.error('[Directions API] Error fetching route from ORS:', error.response?.data || error.message);
+    console.warn('[Directions API] Using fallback straight line route.');
+    return straightLineRoute(start, end);
   }
 }
 
@@ -35,7 +62,7 @@ let NUM_DRIVERS = 7;
 let UPDATE_INTERVAL_MS = 3000; // 3 seconds between location updates
 let ROUTE_REFRESH_INTERVAL = 20 * 60 * 1000; // 20 minutes per new route per driver
 let BOUNDING_BOX = null; // No default; set when city is selected
-const BACKEND_URL = process.env.BACKEND_URL || 'http://geofence_backend:5000/api/drivers'; // Use env or default to service name
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000/api/drivers'; // Use env or default to service name
 
 // --- Utility Functions ---
 function randomCoord() {

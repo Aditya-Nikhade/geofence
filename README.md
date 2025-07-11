@@ -37,7 +37,7 @@ This project provides a platform to:
 - **Driver Simulation**: Simulate multiple drivers moving in real cities
 - **Real-Time Tracking**: Live driver updates via Socket.IO
 - **Alerting**: Backend emits alerts when drivers enter/exit zones
-- **Benchmarking**: Compare Redis and MongoDB geospatial query speeds
+- **Performance Analysis**: Comprehensive database performance analysis with proper benchmarking methodology
 - **Dockerized**: Easy deployment with Docker Compose
 
 ---
@@ -111,7 +111,7 @@ npm run dev
 - Select a city to simulate drivers
 - Draw zones on the map (Pickup, Dropoff, No Entry)
 - View real-time driver movement and zone entry/exit alerts
-- Run the benchmark to compare Redis vs MongoDB geospatial queries
+- Run comprehensive performance analysis to understand database trade-offs for geospatial queries
 
 ---
 
@@ -142,8 +142,8 @@ See `production.env.template` for all variables. Key ones:
 - `GET    /api/zones` — List all zones
 - `DELETE /api/zones/:zoneId` — Delete a zone
 
-### Benchmark API
-- `GET    /api/benchmark` — Run and return geospatial query benchmark
+### Performance Analysis API
+- `GET    /api/benchmark` — Run comprehensive database performance analysis with proper methodology
 
 ### Simulation
 - `POST   /api/simulate` — Start driver simulation for a city
